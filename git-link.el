@@ -342,6 +342,7 @@ we can prevent that behaviour."
 
 (defun git-link--remote ()
   (let* ((branch (git-link--current-branch))
+         (remotes (git-link--remotes))
 	 (remote (or (git-link--get-config "git-link.remote")
 		     git-link-default-remote
 		     (git-link--branch-remote branch))))
@@ -353,8 +354,8 @@ we can prevent that behaviour."
 		 (not (string= branch "master"))))
 	(setq remote (git-link--branch-remote "master")))
 
-    (if (or (null remote) (string= remote "."))
-	"origin"
+    (if (or (null remote) (string= remote ".") (not (member remote remotes)))
+	    (car (or (member "origin" remotes) remotes))
       remote)))
 
 (defun git-link--handler (alist str)

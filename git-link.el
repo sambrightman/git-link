@@ -347,7 +347,7 @@ uses \"ssh.gitlab.company.com\" but the web interface is at
   (git-link--exec "remote"))
 
 (defun git-link--last-commit ()
-  (car (git-link--exec "--no-pager" "log" "-n1" "--pretty=format:%H")))
+  (car (git-link--exec "rev-parse" "--short" "HEAD")))
 
 (defvar magit-buffer-revision)
 
@@ -862,14 +862,14 @@ With a double prefix argument invert the value of
          (list remote (car region) (cadr region))))))
 
   (let ((remote-url (git-link--remote-url remote))
-        filename branch commit handler remote-info git-host web-host)
+        filename ref commit handler remote-info git-host web-host)
     (if (null remote-url)
         (message "Remote `%s' not found" remote)
 
       (setq remote-info (git-link--parse-remote remote-url)
             git-host    (car remote-info)
             filename    (git-link--relative-filename)
-            branch      (git-link--branch)
+            ref         (or (git-link--branch) (git-link--last-commit))
             commit      (git-link--commit)
             handler     (git-link--handler git-link-remote-alist git-host)
             web-host    (or (assoc-default git-host git-link-web-host-alist #'string-match-p)
@@ -900,9 +900,7 @@ With a double prefix argument invert the value of
                                      (not git-link-use-commit)
                                    git-link-use-commit))
                              nil
-                           (if branch
-                               (url-hexify-string branch)
-                             nil))
+                           (url-hexify-string ref))
                          commit
                          start
                          end))))))))

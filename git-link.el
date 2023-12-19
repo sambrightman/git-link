@@ -304,7 +304,7 @@ we can prevent that behaviour."
   (git-link--exec "remote"))
 
 (defun git-link--last-commit ()
-  (car (git-link--exec "--no-pager" "log" "-n1" "--pretty=format:%H")))
+  (car (git-link--exec "rev-parse" "--short" "HEAD")))
 
 (defvar magit-buffer-revision)
 
@@ -786,13 +786,13 @@ With a double prefix argument invert the value of
            (list remote nil nil)
          (list remote (car region) (cadr region))))))
 
-  (let (filename branch commit handler remote-info (remote-url (git-link--remote-url remote)))
+  (let (filename ref commit handler remote-info (remote-url (git-link--remote-url remote)))
     (if (null remote-url)
         (message "Remote `%s' not found" remote)
 
       (setq remote-info (git-link--parse-remote remote-url)
             filename    (git-link--relative-filename)
-            branch      (git-link--branch)
+            ref         (or (git-link--branch) (git-link--last-commit))
             commit      (git-link--commit)
             handler     (git-link--handler git-link-remote-alist (car remote-info)))
 
@@ -821,7 +821,7 @@ With a double prefix argument invert the value of
                                      (not git-link-use-commit)
                                    git-link-use-commit))
                              nil
-                           (url-hexify-string branch))
+                           (url-hexify-string ref))
                          commit
                          start
                          end))))))))
